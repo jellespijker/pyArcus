@@ -1,0 +1,93 @@
+import os
+
+from conans import ConanFile, tools
+from conan.tools.cmake import CMakeToolchain, CMakeDeps, CMake
+from conan.tools.env.virtualbuildenv import VirtualBuildEnv
+from conan.tools.env.virtualrunenv import VirtualRunEnv
+from conan.tools.layout import cmake_layout
+from conan.tools.files.packager import AutoPackager
+
+required_conan_version = ">=1.44.1"
+
+class ArcusConan(ConanFile):
+    name = "pyarcus"
+    version = "5.0.0"
+    license = "LGPL-3.0"
+    author = "Ultimaker B.V."
+    url = "https://github.com/Ultimaker/pyArcus"
+    description = "Communication library between internal components for Ultimaker software"
+    topics = ("conan", "python", "binding", "sip", "cura", "protobuf", "c++")
+    settings = "os", "compiler", "build_type", "arch"
+    revision_mode = "scm"
+    build_policy = "missing"
+    default_user = "ultimaker"
+    default_channel = "testing"
+    exports = "LICENSE*"
+    # python_requires = ["UltimakerBase/0.1@ultimaker/testing"]  TODO uncomment once it is an actual repo
+    # python_requires_extend = "UltimakerBase.UltimakerBase"  TODO uncomment once it is an actual repo
+    generators = "sip"
+    options = { }
+    default_options = { }
+    scm = {
+        "type": "git",
+        "subfolder": ".",
+        "url": "auto",
+        "revision": "auto"
+    }
+
+    def requirements(self):
+        self.requires("arcus/5.0.0-a+7924.90cf4a@ultimaker/testing")
+        self.requires("protobuf/3.17.1")
+        self.requires("python/3.10.2@python/stable")
+        self.requires("sip/6.5.0@python/stable")
+
+    def config_options(self):
+        if self.settings.os == "Macos":
+            self.options["protobuf"].shared = False
+        else:
+            self.options["protobuf"].shared = True
+
+    def validate(self):
+        if self.settings.compiler.get_safe("cppstd"):
+            tools.check_min_cppstd(self, 17)
+
+    def layout(self):
+        cmake_layout(self)
+        self.cpp.build.libs = ["Arcus"]
+
+    def generate(self):
+        be = VirtualBuildEnv(self)
+        be.generate()
+
+        cmake = CMakeDeps(self)
+        cmake.build_context_activated = ["protobuf"]
+        cmake.build_context_build_modules = ["protobuf"]
+        cmake.build_context_suffix = {"protobuf": "_BUILD"}
+        cmake.build_context_suffix = {"sip": "_BUILD"}
+        cmake.generate()
+
+        tc = CMakeToolchain(self)
+
+        # FIXME: This shouldn't be necessary (maybe a bug in Conan????)
+        if self.settings.compiler == "Visual Studio":
+            tc.blocks["generic_system"].values["generator_platform"] = None
+            tc.blocks["generic_system"].values["toolset"] = None
+
+        tc.variables["ALLOW_IN_SOURCE_BUILD"] = True
+        tc.generate()
+
+    def build(self):
+        cmake = CMake(self)
+        cmake.configure()
+        cmake.build()
+        cmake.install()
+
+    def package(self):
+        packager = AutoPackager(self)
+        packager.run()
+
+    def package_info(self):
+        if self.in_local_cache:
+            self.runenv_info.prepend_path("PYTHONPATH", os.path.join(self.package_folder, "site-packages"))
+        else:
+            self.runenv_info.prepend_path("PYTHONPATH", self.build_folder)
