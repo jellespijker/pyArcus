@@ -35,6 +35,10 @@ class ArcusConan(ConanFile):
         "revision": "auto"
     }
 
+    @property
+    def _base_site_package_path(self):
+        return os.path.join("site-packages", "pyArcus")
+
     def requirements(self):
         self.requires("arcus/5.0.0-a+7924.90cf4a@ultimaker/testing")
         self.requires("protobuf/3.17.1")
@@ -83,11 +87,14 @@ class ArcusConan(ConanFile):
         cmake.install()
 
     def package(self):
-        packager = AutoPackager(self)
-        packager.run()
+        self.copy("*.so", self._base_site_package_path, keep_path = False)
+        self.copy("*.dll", self._base_site_package_path, keep_path = False)
+        self.copy("*.dynlib", self._base_site_package_path, keep_path = False)
+        self.copy("*.pyi", self._base_site_package_path, keep_path = False)
 
     def package_info(self):
         if self.in_local_cache:
             self.runenv_info.prepend_path("PYTHONPATH", os.path.join(self.package_folder, "site-packages"))
         else:
+            # TODO check in editable mode if Python imports correctly
             self.runenv_info.prepend_path("PYTHONPATH", self.build_folder)
