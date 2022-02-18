@@ -3,13 +3,11 @@ import os
 from conans import ConanFile, tools
 from conan.tools.cmake import CMakeToolchain, CMakeDeps, CMake
 from conan.tools.env.virtualbuildenv import VirtualBuildEnv
-from conan.tools.env.virtualrunenv import VirtualRunEnv
 from conan.tools.layout import cmake_layout
-from conan.tools.files.packager import AutoPackager
 
 required_conan_version = ">=1.44.1"
 
-class ArcusConan(ConanFile):
+class PyArcusConan(ConanFile):
     name = "pyarcus"
     version = "5.0.0"
     license = "LGPL-3.0"
@@ -40,7 +38,7 @@ class ArcusConan(ConanFile):
         return os.path.join("site-packages", "pyArcus")
 
     def requirements(self):
-        self.requires("arcus/5.0.0-a+7924.90cf4a@ultimaker/testing")
+        self.requires("arcus/5.0.0-a+7924.bce2f4@ultimaker/testing")
         self.requires("protobuf/3.17.1")
         self.requires("python/3.10.2@python/stable")
         self.requires("sip/6.5.0@python/stable")
