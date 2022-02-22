@@ -37,6 +37,7 @@ set(HDR_FILES "PythonMessage.h")
 set(SRC_FILES "${CMAKE_SOURCE_DIR}/src/PythonMessage.cpp")
 
 target_compile_features(pyArcus INTERFACE cxx_std_17)
-#set_project_warnings(pyArcus)
+set_project_warnings(pyArcus)
+target_link_libraries(pyArcus INTERFACE arcus::arcus protobuf::protobuf Python::Python)
 
 add_sip_module(pyArcus ${SIP_MODULE} "${EXTRA_SIP_FILES}" "${HDR_FILES}" "${SRC_FILES}")

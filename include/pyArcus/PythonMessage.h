@@ -20,16 +20,10 @@
 #define ARCUS_PYTHON_MESSAGE_H
 
 #include <Python.h>
-#include "Arcus/Types.h"
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/reflection.h>
 
-namespace google
-{
-    namespace protobuf
-    {
-        class Descriptor;
-        class Reflection;
-    }
-}
+#include "Arcus/Types.h"
 
 namespace Arcus
 {

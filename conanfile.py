@@ -1,9 +1,9 @@
 import os
 
-from conans import ConanFile, tools
+from conan import ConanFile
 from conan.tools.cmake import CMakeToolchain, CMakeDeps, CMake
-from conan.tools.env.virtualbuildenv import VirtualBuildEnv
 from conan.tools.layout import cmake_layout
+from conans import tools
 
 required_conan_version = ">=1.44.1"
 
@@ -58,9 +58,6 @@ class PyArcusConan(ConanFile):
         self.cpp.build.libs = ["Arcus"]
 
     def generate(self):
-        be = VirtualBuildEnv(self)
-        be.generate()
-
         cmake = CMakeDeps(self)
         cmake.build_context_activated = ["protobuf"]
         cmake.build_context_build_modules = ["protobuf"]
@@ -92,7 +89,9 @@ class PyArcusConan(ConanFile):
 
     def package_info(self):
         if self.in_local_cache:
+            self.env_info.PYTHONPATH.append(os.path.join(self.package_folder, "site-packages"))
             self.runenv_info.prepend_path("PYTHONPATH", os.path.join(self.package_folder, "site-packages"))
         else:
             # TODO check in editable mode if Python imports correctly
+            self.env_info.PYTHONPATH.append(self.build_folder)
             self.runenv_info.prepend_path("PYTHONPATH", self.build_folder)

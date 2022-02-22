@@ -18,11 +18,6 @@
 
 #include "pyArcus/PythonMessage.h"
 
-#include <Python.h>
-
-#include <google/protobuf/message.h>
-#include <google/protobuf/reflection.h>
-
 using namespace Arcus;
 using namespace google::protobuf;
 
